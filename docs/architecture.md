@@ -1,55 +1,18 @@
 # Architecture
 
-Maestaris connects ephemeral reasoning runtimes to durable GitHub coordination.
+Maestaris has three actors and one shared memory.
+
+- **Worker A** — interactive coding chat.
+- **Worker B** — interactive coding chat.
+- **Orchestrator** — interactive planning/review chat.
+- **GitHub** — Issues, comments, branches, commits, pull requests, CI, and merged history.
+
+The original goal is to use ordinary chat usage to perform coding work. The architecture therefore does not require a separate model API, hosted executor, polling daemon, or orchestration service.
+
+Optional automation may assist the workflow, but it must remain optional. If an automation surface cannot write to GitHub, Maestaris accepts that limitation instead of building a second execution platform around it.
+
+The default path stays short:
 
 ```text
-ChatGPT orchestrator / worker chats
-             |
-             | manual or scheduled polling
-             v
-      GitHub task Issues
-             |
-       protocol comments
-             |
-             v
-        linked task PRs
-             |
-             v
-       checks + artifacts
-
-GitHub events
-     |
-     +--> Actions validate/sync labels/run CI
-     |
-     +--> GitHub Projects dashboard
-     |
-     X--> do not directly wake an ordinary ChatGPT chat
+Issue -> worker chat -> branch/commit/PR -> orchestrator review -> merge
 ```
-
-## Static configuration
-
-The repository stores only stable topology and instructions:
-
-- `AGENTS.md`
-- `coordination/maestaris.yaml`
-- project YAML
-- agent YAML
-- prompts and schemas
-
-## Live state
-
-GitHub is the single live state machine.
-
-The task Issue body defines READY work. It does not create worker ownership. Comments record ACK ownership, terminal worker results, and orchestrator reviews. Linked PRs/checks/artifacts are evidence.
-
-Protocol v4 intentionally has no mutable worker-state YAML and makes the ACK event authoritative for worker ownership.
-
-## Derived views
-
-Actions derive status/priority labels from the Issue event log.
-
-GitHub Projects may auto-add task Issues and expose dashboards. Labels and Project fields are derived and never override Issue history.
-
-## Reconstruction property
-
-If every ChatGPT conversation disappeared, a fresh chat should recover from static repo config plus GitHub Issues/PRs/checks.

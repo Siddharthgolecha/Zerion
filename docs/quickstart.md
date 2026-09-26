@@ -2,54 +2,44 @@
 
 ## 1. Put Maestaris in the repository
 
-Use this repository as a template or copy its `AGENTS.md`, `coordination/`, `prompts/`, and relevant `.github/` files.
+Keep `AGENTS.md`, `coordination/maestaris.yaml`, and `prompts/`.
 
-Optional helper:
+## 2. Create ordinary chats
 
-```bash
-python -m pip install -e .
-maestaris init my-project \
-  --workers theory implementation audit \
-  --repository owner/repository
-maestaris validate
-```
-
-The CLI creates static configuration only.
-
-## 2. Create ChatGPT roles
-
-A common topology is:
-
-- one orchestrator chat;
-- one or two scheduled worker-pool chats;
-- specialist identities defined in `coordination/agents/`.
-
-The same scheduled pool can service multiple specialist identities.
-
-## 3. Point chats at GitHub
-
-Tell a fresh conversation to read `AGENTS.md` and operate Maestaris on the repository.
-
-Workers discover live work from GitHub Issues rather than chat memory.
-
-## 4. Create tasks
-
-Create a structured `[Maestaris task]` Issue.
-
-The worker ACKs in a comment, performs the bounded work, links a draft PR when appropriate, and posts its terminal result on the Issue.
-
-## 5. Let Actions handle mechanics
-
-The shipped workflow validates protocol records and derives labels from the Issue history.
-
-## 6. Optional GitHub Project
-
-Create a Project and configure Auto-add with:
+Orchestrator:
 
 ```text
-is:issue label:"maestaris:task"
+Use Maestaris on OWNER/REPO. Act as the orchestrator.
 ```
 
-Use labels for Blocked, Needs review, Claimed, and Priority views.
+Worker A:
 
-See `docs/github-projects.md`.
+```text
+Use Maestaris on OWNER/REPO. Act as Worker A.
+```
+
+Worker B:
+
+```text
+Use Maestaris on OWNER/REPO. Act as Worker B.
+```
+
+## 3. Create GitHub tasks
+
+Create a normal Issue, add `maestaris:task`, and optionally add `priority:P0`, `priority:P1`, or `priority:P2`.
+
+Give the Issue a concrete objective and acceptance criteria.
+
+## 4. Invoke workers
+
+Tell a worker `continue`.
+
+The worker reads GitHub, claims a task, writes code, tests it, commits, pushes, and opens or updates a PR.
+
+## 5. Invoke the orchestrator
+
+Tell the orchestrator `review progress and continue`.
+
+It reviews actual PRs/CI, merges or requests changes, and creates the next tasks.
+
+No daemon or external executor is required.

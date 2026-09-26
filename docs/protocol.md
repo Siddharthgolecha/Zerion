@@ -1,84 +1,45 @@
 # Protocol
 
-## 1. Publish READY work
+Maestaris has one small protocol.
 
-A bounded task is a GitHub Issue with the configured title prefix and a body beginning:
+## Task
 
-```text
-[ORCHESTRATOR:v1]
-task_id: example-proof-0001
-project: example-project
-priority: P1
-depends_on: []
-```
+A GitHub Issue labeled `maestaris:task`, with a concrete objective and acceptance criteria.
 
-An open task Issue is **READY by default**.
+Priority is expressed with `priority:P0`, `priority:P1`, or `priority:P2`.
 
-Do not write `worker: unassigned`. Omit `worker` for ordinary queue work.
+## Claim
 
-Use an optional worker pin only when a task genuinely requires one specialist:
+Before substantive work:
 
 ```text
-worker: example-security-auditor
+[MAESTARIS CLAIM]
+worker: A
+claimed_at: <UTC ISO timestamp>
 ```
 
-The Issue body may contain legacy `status: ASSIGNED` during migration, but new tasks should not encode live state in the body.
+The claim expires after `claims.active_hours` unless refreshed by the same worker. It exists only to prevent Worker A and Worker B from doing the same task.
 
-## 2. Claim
+## Work
 
-A worker pool selects an eligible READY task and posts:
+Use `maestaris/<issue-number>-<slug>`, make normal commits, push them, and open/update a normal pull request.
+
+## Result
 
 ```text
-[WORKER:theory-worker:v1]
-task_id: example-proof-0001
-status: ACK
-dispatcher: pool-A
-claimed_at: 2026-01-01T00:00:00Z
-lease_hours: 3
+[MAESTARIS RESULT]
+worker: A
+status: READY_FOR_REVIEW
+commit: <sha>
+pr: <number>
+tests: <result>
+summary: <what changed>
 ```
 
-The ACK establishes the worker identity and lease. Before ACK, the task has no owner.
+For a genuine blocker use `status: BLOCKED` and explain the concrete dependency.
 
-The first valid unexpired ACK owns the task.
+## Review
 
-## 3. Work
+The orchestrator reviews the PR and CI using normal GitHub mechanisms: merge good work, request changes when needed, or close obsolete work.
 
-For repository changes, create a task branch and linked draft PR early.
-
-A closing keyword such as `Resolves #123` may connect merge to Issue completion.
-
-## 4. Worker terminal event
-
-Post DONE, BLOCKED, or NEEDS_REVIEW on the Issue with exact durable evidence.
-
-## 5. Orchestrator review
-
-Post ACCEPTED, REVISE, or REJECTED after inspecting actual evidence.
-
-Native PR reviews are optional UX. The Issue-side Maestaris review event is the protocol record.
-
-## Live-state reduction
-
-Task status is reconstructed by replaying Issue comments in order:
-
-```text
-open task, no ACK       -> ready
-ACK                     -> claimed
-BLOCKED                 -> blocked
-DONE / NEEDS_REVIEW     -> needs_review
-ACCEPTED                -> accepted
-REVISE                  -> revise
-REJECTED                -> rejected
-```
-
-Worker ownership is reconstructed from the active ACK, not from task creation metadata.
-
-## Derived labels
-
-GitHub Actions reduce the same event history and synchronize one Maestaris status label plus task/priority labels.
-
-Labels aid search and Projects. They are not canonical state.
-
-## Idempotency
-
-Every worker reads the Issue history before acting. Stable task IDs, ACK leases, terminal events, and reviews make polling retry-safe.
+There is no separate review-lease protocol and no duplicate state machine.

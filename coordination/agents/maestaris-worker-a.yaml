@@ -1,12 +1,6 @@
 schema: 1
 agent: maestaris-worker-a
-project: maestaris
-role: implementation-research-and-testing
-dispatcher_pool: A
+worker: A
+role: coding-worker
 status: active
-
-control_plane:
-  transport: github_issue
-
-project_paths:
-  - .
+instructions: prompts/worker-pool.md

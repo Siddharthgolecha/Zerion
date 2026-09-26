@@ -1,13 +1,7 @@
 # Contributing
 
-Contributions are welcome. Keep changes small, reviewable, and aligned with Maestaris's repository-first invariant.
+Keep Maestaris small.
 
-For protocol changes, explain:
+Changes should improve the path from GitHub task to useful work by ordinary coding chats. Prefer GitHub-native primitives and simple instructions over new orchestration subsystems.
 
-1. the failure mode being addressed;
-2. whether the change is runtime-independent or adapter-specific;
-3. how repeated execution remains idempotent;
-4. how a new worker reconstructs state from GitHub alone;
-5. migration impact for existing projects.
-
-Please include tests or validation updates when modifying schemas or scripts.
+Before proposing new infrastructure, show the concrete recurring problem it solves and why the existing Issue -> worker -> PR -> review loop is insufficient.

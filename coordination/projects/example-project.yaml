@@ -1,23 +1,7 @@
 schema: 1
 project: example-project
-title: Maestaris Research Demo
-status: active
 repository: owner/repository
-runtime: runtime-defined
-
-canonical_paths:
-  - README.md
-  - examples/research-demo/PROJECT_STATUS.md
-
-orchestrator: orchestrator
-auditor: audit-worker
-
-control_plane:
-  transport: github_issue
-
-active_workers:
-  - theory-worker
-  - implementation-worker
-  - audit-worker
-
-dormant_workers: []
+status: active
+workers:
+  - A
+  - B
