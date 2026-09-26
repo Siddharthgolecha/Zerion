@@ -1,117 +1,34 @@
 schema: 1
-protocol_version: 4
-entrypoint: AGENTS.md
-canonical_branch: main
-orchestrator: orchestrator
+mode: chat-first
 
-defaults:
-  ack_lease_hours: 3
-  max_pending_reviews_per_dispatcher: 4
-  worker_retry_budget: 3
+repository: Siddharthgolecha/Maestaris
+default_branch: main
 
-github:
-  task_transport: issue
-  task_title_prefix: "[Maestaris task]"
-  task_label: "maestaris:task"
-  status_labels:
-    ready: "maestaris:ready"
-    claimed: "maestaris:claimed"
-    blocked: "maestaris:blocked"
-    needs_review: "maestaris:needs-review"
-    accepted: "maestaris:accepted"
-    revise: "maestaris:revise"
-    rejected: "maestaris:rejected"
-  priority_label_prefix: "priority:"
-  task_pull_request:
-    draft_on_start: true
-    branch_prefix: maestaris/task
-    link_keyword: Resolves
-  native_reviews:
-    accepted: APPROVE
-    revise: REQUEST_CHANGES
-    same_actor_fallback: COMMENT
-  projects:
-    optional: true
-    auto_add_filter: 'is:issue label:"maestaris:task"'
-    field_sync:
-      enabled: true
-      project_id_env: MAESTARIS_PROJECT_ID
-      token_env: MAESTARIS_PROJECT_TOKEN
-      fields:
-        priority: Priority
-        status: Status
-        worker: Worker
-        dispatcher: Dispatcher
-        runtime: Runtime
-      mappings:
-        priority:
-          P0: P0
-          P1: P1
-          P2: P2
-        status:
-          ready: Todo
-          claimed: In Progress
-          blocked: In Progress
-          needs_review: In Progress
-          revise: In Progress
-          accepted: Done
-          rejected: Done
+tasks:
+  label: maestaris:task
+  priority_labels:
+    - priority:P0
+    - priority:P1
+    - priority:P2
 
-pools:
-  A:
-    max_tasks_per_run: 2
-  B:
-    max_tasks_per_run: 2
+claims:
+  active_hours: 4
+  workers:
+    - A
+    - B
 
+branches:
+  prefix: maestaris/
 
 execution:
-  default_mode: autonomous_if_write_capable
-  failure_scope: candidate_local
-  pinning:
-    mode: fallback
-    require_observed_capability_benefit: true
-  capabilities:
-    source: current_invocation
-    provider_identity_is_not_capability: true
-    runtime_wide_write_denial_is_task_blocker: false
-  persistence:
-    recurring_roles_stay_enabled: true
-  review:
-    persistent_drain: true
+  interactive_chats_are_primary: true
+  scheduled_runs_required: false
+  external_executor_required: false
 
-scheduler_bootstrap:
-  enabled: true
-  source: pools
-  cadence: hourly
-  reconcile_existing: true
-  instance_template: "maestaris-{runtime}-pool-{pool}"
-  schedule_minutes:
-    chatgpt:
-      A: 22
-      B: 52
-    gemini-spark:
-      A: 37
-      B: 7
-  orchestrator_schedule:
-    enabled: true
-    instance_template: "maestaris-{runtime}-orchestrator"
-    schedule_minutes:
-      chatgpt: 7
-      gemini-spark: 22
-  review_schedule:
-    enabled: true
-    instance_template: "maestaris-{runtime}-review"
-    schedule_minutes:
-      chatgpt: 12
-      gemini-spark: 27
-
-protocol_comment_relay:
-  enabled: true
-  control_branch_template: "maestaris/control/{instance}"
-  outbox_path: ".maestaris/outbox"
-  workflow: "relay-maestaris-protocol.yml"
-  direct_comment_preferred: true
-
-projects:
-  - maestaris
-  - example-project
+principles:
+  - do_project_work_before_orchestration_work
+  - prefer_github_native_state
+  - keep_claims_lightweight
+  - avoid_duplicate_worker_effort
+  - preserve_tests_and_review
+  - never_commit_secrets

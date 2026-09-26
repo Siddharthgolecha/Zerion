@@ -1,25 +1,16 @@
-## Maestaris task
+## Task
 
-Maestaris-Task: #<issue-number>
+Resolves #
 
-Use a GitHub closing keyword when this PR should complete the task on merge, for example:
+## What changed
 
-`Resolves #<issue-number>`
-
-For long-running work, open the PR as a **draft** soon after ACK so the work plane is visible without pretending it is complete.
-
-## Summary
-
-## Durable evidence
+Describe the substantive repository change.
 
 ## Verification
 
-## Claim / classification changes
+- Tests/checks:
+- Result:
 
-## Idempotency / recovery impact
+## Notes
 
-- [ ] Linked to the correct Maestaris task Issue
-- [ ] `maestaris validate`
-- [ ] Relevant tests / CI / proof / experiment passed
-- [ ] Fresh worker can reconstruct required state from repository + GitHub Issue/PR evidence
-- [ ] No secrets or project-specific private data added
+Anything the orchestrator should inspect closely.
